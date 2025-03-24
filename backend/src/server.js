@@ -54,6 +54,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/finance', financeRoutes);
+app.use('/api/auth', userRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
