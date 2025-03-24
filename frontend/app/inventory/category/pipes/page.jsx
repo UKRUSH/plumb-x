@@ -9,9 +9,7 @@ import {
   ArrowPathIcon,
   PlusCircleIcon,
   ChartBarIcon,
-  ArrowDownTrayIcon,
-  PencilIcon,
-  TrashIcon
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 import { samplePipesData } from '../../../data/sampleData';
 
@@ -141,13 +139,14 @@ export default function PipesPage() {
       console.log("No stored items found, using sample data");
     }
     
-    // Calculate statistics
-    const totalValue = combinedData.reduce((sum, item) => sum + item.value, 0);
-    const lowStockItems = combinedData.filter(item => item.stockLevel < item.reorderLevel).length;
-    const uniqueTypes = new Set(combinedData.map(item => item.type)).size;
+    // Calculate statistics with safety checks
+    const totalValue = Array.isArray(combinedData) ? combinedData.reduce((sum, item) => sum + (item.value || 0), 0) : 0;
+    const lowStockItems = Array.isArray(combinedData) ? combinedData.filter(item => item.stockLevel < item.reorderLevel).length : 0;
+    const uniqueTypes = Array.isArray(combinedData) ? new Set(combinedData.map(item => item.type)).size : 0;
+    const totalItems = Array.isArray(combinedData) ? combinedData.length : 0;
     
     setStats({
-      total: combinedData.length,
+      total: totalItems,
       lowStock: lowStockItems,
       value: totalValue,
       types: uniqueTypes
@@ -164,7 +163,7 @@ export default function PipesPage() {
     fetchItems();
   }, []);
 
-  // Handle sorting
+  // Handle sorting (used in the filtered items sort function)
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -173,8 +172,6 @@ export default function PipesPage() {
       setSortDirection('asc');
     }
   };
-  
-  // Filter items based on search, filter, and sort
   const filteredItems = items
     .filter(item => {
       // Filter by type if not 'all'
