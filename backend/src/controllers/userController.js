@@ -152,12 +152,13 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    const user = await User.findOne({ email });
+    // For simple login without JWT as specified
+    const user = await User.findOne({ email }).select('+password');
     
-    if (user && user.password === password) { // Simple password check since we're not using bcrypt
+    if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
-        fullName: user.fullName,
+        name: user.name,
         email: user.email,
         role: user.role,
         message: 'Login successful'
@@ -173,38 +174,5 @@ exports.login = async (req, res) => {
       status: 'error',
       message: error.message
     });
-  }
-};
-
-// @desc    Register new user
-// @route   POST /api/auth/register
-// @access  Public
-exports.registerUser = async (req, res) => {
-  try {
-    const { fullName, email, password } = req.body;
-
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    // Create user
-    const user = await User.create({
-      fullName,
-      email,
-      password, // storing password as plain text since no encryption needed
-      role: 'customer' // default role
-    });
-
-    if (user) {
-      res.status(201).json({
-        message: 'User registered successfully'
-      });
-    } else {
-      res.status(400).json({ message: 'Invalid user data' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 }; 
