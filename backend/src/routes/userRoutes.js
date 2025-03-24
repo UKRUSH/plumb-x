@@ -20,4 +20,7 @@ router.delete('/:id', userController.deleteUser);
 // Login route
 router.post('/login', userController.login);
 
+// Register route
+router.post('/register', userController.registerUser);
+
 module.exports = router; 
