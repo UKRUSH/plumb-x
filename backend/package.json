@@ -1,0 +1,22 @@
+{
+  "name": "plumb-x-backend",
+  "version": "1.0.0",
+  "description": "Backend for Plumb-X application",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed": "node src/utils/seedData.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^7.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
