@@ -86,16 +86,20 @@ export default function AddEmployee() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(formData),
+                    body: JSON.stringify({
+                        ...formData,
+                        salary: Number(formData.salary),
+                        joiningDate: new Date(formData.joiningDate).toISOString()
+                    }),
                 });
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    router.push('/employees/view_employees');
-                } else {
+                if (!response.ok) {
                     throw new Error(data.message || 'Failed to add employee');
                 }
+
+                router.push('/employees/view_employees');
             } catch (error) {
                 console.error('Error:', error);
                 setErrors(prev => ({

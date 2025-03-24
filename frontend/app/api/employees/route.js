@@ -10,16 +10,19 @@ export async function POST(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
+      credentials: 'include',
     });
 
     if (!response.ok) {
-      throw new Error('Failed to add employee');
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to add employee');
     }
 
     const employee = await response.json();
     return NextResponse.json(employee, { status: 201 });
 
   } catch (error) {
+    console.error('Server error:', error);
     return NextResponse.json(
       { message: error.message || 'Something went wrong' },
       { status: 400 }
@@ -30,7 +33,10 @@ export async function POST(request) {
 export async function GET() {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/employees`, {
-      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
     });
 
     if (!response.ok) {

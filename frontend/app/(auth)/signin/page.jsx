@@ -3,12 +3,12 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FaFacebook, FaGoogle, FaMicrosoft } from "react-icons/fa";
-import { mockUsers } from "@/app/data/mockUsers";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get('callbackUrl');
@@ -16,38 +16,54 @@ export default function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setLoading(true);
         
-        // Find user in mock data
-        const user = mockUsers.find(u => u.email === email && u.password === password);
-        
-        if (user) {
-            // Clear existing cookies
-            document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-            document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-            document.cookie = "userName=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-            
-            // Set new cookies
-            document.cookie = `token=demo-token; path=/`;
-            document.cookie = `role=${encodeURIComponent(user.role)}; path=/`;
-            document.cookie = `userName=${encodeURIComponent(user.name)}; path=/`;
-            
-            // Redirect logic
-            setTimeout(() => {
-                if (callbackUrl && !callbackUrl.startsWith('/signin')) {
-                    router.push(callbackUrl);
-                } else {
-                    const roleRedirects = {
-                        inventory: '/inventory/dashboard',
-                        employee: '/employees/employee_manager_dashboard',
-                        delivery: '/delivery/dashboard',
-                        finance: '/finance/dashboard',
-                        customer: '/dashboard/orderAndCustomer'
-                    };
-                    router.push(roleRedirects[user.role]);
-                }
-            }, 100);
-        } else {
-            setError("Invalid email or password");
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Clear existing cookies
+                document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+                document.cookie = "role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+                document.cookie = "userName=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+                
+                // Set new cookies
+                document.cookie = `token=demo-token; path=/`;
+                document.cookie = `role=${encodeURIComponent(data.role)}; path=/`;
+                document.cookie = `userName=${encodeURIComponent(data.fullName)}; path=/`;
+                
+                // Redirect logic
+                setTimeout(() => {
+                    if (callbackUrl && !callbackUrl.startsWith('/signin')) {
+                        router.push(callbackUrl);
+                    } else {
+                        const roleRedirects = {
+                            inventory: '/inventory/dashboard',
+                            employee: '/employees/employee_manager_dashboard',
+                            delivery: '/delivery/dashboard',
+                            finance: '/finance/dashboard',
+                            customer: '/dashboard/orderAndCustomer',
+                            admin: '/admin/dashboard'
+                        };
+                        router.push(roleRedirects[data.role]);
+                    }
+                }, 100);
+            } else {
+                setError(data.message || "Invalid email or password");
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            setError("An error occurred during login");
+        } finally {
+            setLoading(false);
         }
     };
 

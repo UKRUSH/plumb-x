@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const employeeSchema = new mongoose.Schema({
+  employeeId: {
+    type: Number,
+    unique: true
+  },
   fullName: {
     type: String,
     required: true
@@ -42,5 +47,8 @@ const employeeSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Add auto-incrementing employeeId
+employeeSchema.plugin(AutoIncrement, {inc_field: 'employeeId'});
 
 module.exports = mongoose.model('Employee', employeeSchema); 
