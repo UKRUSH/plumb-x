@@ -32,20 +32,10 @@ exports.getEmployeeById = async (req, res) => {
 // @access  Private/Admin
 exports.createEmployee = async (req, res) => {
   try {
-    // Remove employeeId from request body if it exists
-    const { employeeId, ...employeeData } = req.body;
-    
-    const employee = new Employee(employeeData);
+    const employee = new Employee(req.body);
     const newEmployee = await employee.save();
-    
     res.status(201).json(newEmployee);
   } catch (error) {
-    // Check if it's a duplicate email error
-    if (error.code === 11000 && error.keyPattern.email) {
-      return res.status(400).json({ 
-        message: 'An employee with this email already exists' 
-      });
-    }
     res.status(400).json({ message: error.message });
   }
 };
